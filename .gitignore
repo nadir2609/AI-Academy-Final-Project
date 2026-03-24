@@ -7,3 +7,8 @@
 *.pdf
 *.synctex.gz
 deliverables/committee_evaluation_sheet.tex
+
+figures/digits_grid.png
+figures/digits_samples.png
+figures/linear_gaussian_exploration.png
+figures/moons_exploration.png
