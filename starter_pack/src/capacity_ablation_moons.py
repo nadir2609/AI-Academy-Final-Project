@@ -76,7 +76,7 @@ def run_capacity_ablation():
         optimizer = Adam(lr=learning_rate)
         
         # Train model
-        best_params, history = train(
+        best_params, history,best_epoch = train(
             model, optimizer,
             X_train, y_train,
             X_val, y_val,

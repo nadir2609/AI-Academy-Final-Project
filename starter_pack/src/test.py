@@ -52,7 +52,8 @@ def plot_history(history, dataset_name):
     ax2.grid(True)
 
     plt.tight_layout()
-    plt.savefig(f'{dataset_name}_training_history.png')
+    figures_dir = Path(__file__).parent.parent / 'figures'
+    plt.savefig(figures_dir / f'{dataset_name}_history.png')
     plt.show()
 
 
@@ -65,9 +66,6 @@ def print_best_params(best_params, dataset_name):
         print(f"\n{param_name}:")
         print(f"  Shape: {param_value.shape}")
         print(f"  Mean: {np.mean(param_value):.6f}")
-        print(f"  Std: {np.std(param_value):.6f}")
-        print(f"  Min: {np.min(param_value):.6f}")
-        print(f"  Max: {np.max(param_value):.6f}")
     print(f"{'=' * 50}\n")
 
 
@@ -101,7 +99,7 @@ def main():
         optimizer = Adam()
 
         # Train model
-        best_params, history = train(
+        best_params, history, best_epoch = train(
             model=model,
             optimizer=optimizer,
             X_train=X_train,
@@ -123,6 +121,7 @@ def main():
         print(f"Final Training Accuracy: {history['train_acc'][-1]:.4f}")
         print(f"Final Validation Accuracy: {history['val_acc'][-1]:.4f}")
         print(f"Best Validation Loss: {min(history['val_loss']):.4f}")
+        print(f"Best Epoch: {best_epoch}\n")
 
 
 if __name__ == '__main__':

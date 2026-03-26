@@ -29,7 +29,7 @@ def train(model, optimizer, X_train, y_train, X_val, y_val, epochs=200, batch_si
     def pack_params():
         return {'W1': model.W1, 'b1': model.b1, 'W2': model.W2, 'b2': model.b2}
 
-    # L2 regularization term
+    # L2 regularization term(prevent overfitting)
     def l2_penalty():
         return 0.5 * lam * (np.sum(model.W1 ** 2) + np.sum(model.W2 ** 2))
 
@@ -38,7 +38,7 @@ def train(model, optimizer, X_train, y_train, X_val, y_val, epochs=200, batch_si
         probs = model.forward(X)
         data_loss = -np.mean(np.log(probs[np.arange(y.shape[0]), y] + eps))
         loss = data_loss + l2_penalty()
-        accuracy = np.mean(np.argmax(probs, axis=1) == y) # check if the prediction is correct
+        accuracy = np.mean(np.argmax(probs, axis=1) == y) # accuracy is the fraction of correct predictions
         return loss, accuracy
 
     history = {
@@ -91,6 +91,6 @@ def train(model, optimizer, X_train, y_train, X_val, y_val, epochs=200, batch_si
         if val_loss < min_val_loss:
             min_val_loss = val_loss
             best_params = copy.deepcopy(pack_params())  # deep copy for params
-            best_epoch = epoch  # we may need it later
+            best_epoch = epoch
 
-    return best_params, history
+    return best_params, history,best_epoch
