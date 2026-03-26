@@ -17,64 +17,20 @@ from pathlib import Path
 from mlp import MLP
 from train import train
 from optimizers import SGD, Momentum, Adam
-
-
-def load_digits_data():
-    """Load the digits dataset with train/val/test splits."""
-    script_dir = Path(__file__).parent
-    data_dir = script_dir.parent / 'data'
-
-    # Load digits data
-    data = np.load(data_dir / 'digits_data.npz')
-    splits = np.load(data_dir / 'digits_split_indices.npz')
-
-    X, y = data['X'], data['y']
-    train_idx = splits['train_idx']
-    val_idx = splits['val_idx']
-    test_idx = splits['test_idx']
-
-    X_train, y_train = X[train_idx], y[train_idx]
-    X_val, y_val = X[val_idx], y[val_idx]
-    X_test, y_test = X[test_idx], y[test_idx]
-
-    return X_train, y_train, X_val, y_val, X_test, y_test
-
-
-def compute_accuracy(model, X, y):
-    """Evaluate model accuracy on a dataset."""
-    probs = model.forward(X)
-    predictions = np.argmax(probs, axis=1)
-    accuracy = np.mean(predictions == y)
-    return accuracy
+import helper
 
 
 def train_with_optimizer(optimizer_name, optimizer, X_train, y_train, X_val, y_val,
-                        input_dim=64, hidden_dim=32, num_classes=10,
-                        epochs=200, batch_size=64, lam=1e-4):
-    """Train a model with a specific optimizer and return results.
-    Args:
-        optimizer_name (str): Name of the optimizer being used in training,
-            used for display purposes.
-        optimizer: The optimizer instance to be used for updating model parameters.
-    Returns:
-        dict: A dictionary containing the following keys and respective values:
-            'model': The trained MLP model with best parameters loaded.
-            'history': A dictionary containing the training and validation loss
-                history (val_loss, val_acc) over all epochs.
-            'best_params': A dictionary with the model parameters
-                ('W1', 'b1', 'W2', 'b2') that achieved the best validation loss.
-            'best_epoch': The epoch at which the best validation loss was observed.
-            'final_val_loss': The lowest validation loss encountered during training.
-            'final_val_acc': The validation accuracy corresponding to the best validation loss.
-    """
+                         input_dim=64, hidden_dim=32, num_classes=10,
+                         epochs=200, batch_size=64, lam=1e-4):
+    """Train a model with a specific optimizer and return results."""
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"Training with {optimizer_name}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     # create model
     model = MLP(input_dim=input_dim, hidden_dim=hidden_dim, num_classes=num_classes)
-
 
     best_params, history, best_epoch = train(
         model=model,
@@ -123,7 +79,7 @@ def plot_comparison(results_dict, save_path):
     for opt_name, results in results_dict.items():
         history = results['history']
         ax1.plot(history['train_loss'], label=f'{opt_name}',
-                color=colors[opt_name], alpha=0.7, linewidth=2)
+                 color=colors[opt_name], alpha=0.7, linewidth=2)
 
     ax1.set_xlabel('Epoch', fontsize=12)
     ax1.set_ylabel('Training Loss', fontsize=12)
@@ -135,7 +91,7 @@ def plot_comparison(results_dict, save_path):
     for opt_name, results in results_dict.items():
         history = results['history']
         ax2.plot(history['val_loss'], label=f'{opt_name}',
-                color=colors[opt_name], alpha=0.7, linewidth=2)
+                 color=colors[opt_name], alpha=0.7, linewidth=2)
 
     ax2.set_xlabel('Epoch', fontsize=12)
     ax2.set_ylabel('Validation Loss', fontsize=12)
@@ -166,7 +122,7 @@ def print_results_table(results_dict, X_test, y_test):
         best_epoch = results['best_epoch']
 
         # Compute test accuracy
-        test_acc = compute_accuracy(model, X_test, y_test)
+        test_acc = helper.compute_accuracy(model, X_test, y_test)
 
         print(f"{opt_name:<15} {final_val_loss:<18.6f} {final_val_acc:<12.4f} {best_epoch:<15} {test_acc:<12.4f}")
 
@@ -175,9 +131,9 @@ def print_results_table(results_dict, X_test, y_test):
 
 def analyze_convergence(results_dict):
     """Analyze convergence speed and stability."""
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("CONVERGENCE ANALYSIS")
-    print("="*80)
+    print("=" * 80)
 
     for opt_name, results in results_dict.items():
         history = results['history']
@@ -208,7 +164,7 @@ def analyze_convergence(results_dict):
         print(f"    - Best val loss: {best_loss:.6f}")
         print(f"    - Final val accuracy: {results['final_val_acc']:.4f}")
 
-    print("="*80)
+    print("=" * 80)
 
 
 def get_training_config():
@@ -373,7 +329,7 @@ def main():
 
     # Load data
     print("\nLoading Digits dataset...")
-    X_train, y_train, X_val, y_val, X_test, y_test = load_digits_data()
+    X_train, y_train, X_val, y_val, X_test, y_test = helper.load_dataset("digits_data", test=True)
     print_dataset_info(X_train, y_train, X_val, X_test)
 
     # Get configuration

@@ -4,29 +4,7 @@ from pathlib import Path
 from starter_pack.src.mlp import MLP
 from starter_pack.src.train import train
 from starter_pack.src.optimizers import SGD, Momentum, Adam
-
-
-def load_dataset(dataset_name):
-    """Load dataset from .npz file."""
-    # Get the directory where this script is located
-    script_dir = Path(__file__).parent
-    data_dir = script_dir.parent / 'data'
-
-    data_path = data_dir / f'{dataset_name}.npz'
-    data = np.load(data_path)
-
-    # Check if data is already split
-    if 'X_train' in data.keys():
-        return data['X_train'], data['y_train'], data['X_val'], data['y_val']
-    else:
-        # Handle digits_data which needs to be split using indices
-        X, y = data['X'], data['y']
-        # Extract base name (e.g., 'digits' from 'digits_data')
-        base_name = dataset_name.replace('_data', '')
-        indices_path = data_dir / f'{base_name}_split_indices.npz'
-        indices = np.load(indices_path)
-        train_idx, val_idx = indices['train_idx'], indices['val_idx']
-        return X[train_idx], y[train_idx], X[val_idx], y[val_idx]
+from starter_pack.src.helper import load_dataset
 
 
 def plot_history(history, dataset_name):
