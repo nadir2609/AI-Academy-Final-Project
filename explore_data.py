@@ -6,7 +6,7 @@ from pathlib import Path
 print("STEP 1: Loading datasets")
 
 data_dir = Path("starter_pack/data")
-
+figures_dir = Path(__file__).parent / 'starter_pack' / 'figures'
 # Load Linear Gaussian
 linear = np.load(data_dir / "linear_gaussian.npz")
 print("\nLinear Gaussian loaded. Keys:", list(linear.keys()))
@@ -45,7 +45,6 @@ print("\nDigits (raw):")
 print(f"  X: {digits_raw['X'].shape} ")
 print(f"  y: {digits_raw['y'].shape}")
 
-
 # STEP 3: Verify splits (60/20/20)
 
 print("\n" + "=" * 60)
@@ -64,7 +63,6 @@ def check_split(dataset_name, y_train, y_val, y_test):
     print(f"  Val:   {n_val:4d} ({n_val / n_total * 100:5.1f}%)")
     print(f"  Test:  {n_test:4d} ({n_test / n_total * 100:5.1f}%)")
     print(f"  Total: {n_total:4d}")
-
 
 
 check_split("Linear Gaussian", linear["y_train"], linear["y_val"], linear["y_test"])
@@ -102,11 +100,9 @@ show_class_distribution(
     digits_y[splits["test_idx"]],
 )
 
-
 # STEP 5: Visualize Linear Gaussian
 
 print("STEP 5: Visualizing Linear Gaussian")
-
 
 fig, axes = plt.subplots(1, 3, figsize=(15, 4))
 
@@ -126,10 +122,8 @@ for ax, split in zip(axes, ["train", "val", "test"]):
 
 plt.suptitle("Linear Gaussian Dataset", fontsize=14, fontweight="bold")
 plt.tight_layout()
-Path("figures").mkdir(exist_ok=True)
-plt.savefig("figures/linear_gaussian_exploration.png", dpi=150, bbox_inches="tight")
+plt.savefig(figures_dir / "linear_gaussian_exploration.png", dpi=150, bbox_inches="tight")
 plt.show()
-
 
 # STEP 6: Visualize Moons
 
@@ -153,9 +147,8 @@ for ax, split in zip(axes, ["train", "val", "test"]):
 
 plt.suptitle("Moons Dataset", fontsize=14, fontweight="bold")
 plt.tight_layout()
-plt.savefig("figures/moons_exploration.png", dpi=150, bbox_inches="tight")
+plt.savefig(figures_dir / "moons_exploration.png", dpi=150, bbox_inches="tight")
 plt.show()
-
 
 # STEP 7: Visualize Digits (one per class)
 
@@ -178,9 +171,8 @@ for digit in range(10):
 
 plt.suptitle("Sample Digits (8×8 images)", fontsize=14, fontweight="bold")
 plt.tight_layout()
-plt.savefig("figures/digits_samples.png", dpi=150, bbox_inches="tight")
+plt.savefig(figures_dir / "digits_samples.png", dpi=150, bbox_inches="tight")
 plt.show()
-
 
 # STEP 8: Visualize digit grid
 
@@ -207,6 +199,5 @@ for i in range(8):
 
 plt.suptitle("Random 8×8 Grid of Training Digits", fontsize=14, fontweight="bold")
 plt.tight_layout()
-plt.savefig("figures/digits_grid.png", dpi=150, bbox_inches="tight")
+plt.savefig(figures_dir / "digits_grid.png", dpi=150, bbox_inches="tight")
 plt.show()
-
