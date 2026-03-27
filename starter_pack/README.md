@@ -17,7 +17,7 @@ This starter pack is intentionally minimal. Its job is to remove setup noise, no
 ## Not Included
 
 - softmax regression code
-- neural network code
+- neural network codeww
 - model skeletons or placeholder methods
 - training-loop scaffolding
 - optimizer implementations
