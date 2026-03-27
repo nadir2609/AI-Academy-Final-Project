@@ -9,3 +9,5 @@
 deliverables/committee_evaluation_sheet.tex
 nul
 __pycache__/
+.idea/
+.vscode/
