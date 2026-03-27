@@ -7,6 +7,4 @@
 *.pdf
 *.synctex.gz
 deliverables/committee_evaluation_sheet.tex
-
-
-__pycache__/
+nul
