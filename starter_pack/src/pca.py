@@ -7,6 +7,8 @@ class PCA:
         self.n_components = n_components
         self.mean = None
         self.components = None
+        self.explained_variance_ = None
+        self.explained_variance_ratio_ = None
 
     def fit(self, X):
         """Fit the model with X by computing the mean and principal components.
@@ -29,6 +31,15 @@ class PCA:
 
         eigenvalues = eigenvalues[idxs]
         eigenvectors = eigenvectors[idxs]
+
+        # top n eigenvalues
+        self.explained_variance_ = eigenvalues[:self.n_components]
+
+        # sum of all eigenvalues
+        total_variance = np.sum(eigenvalues)
+
+        # explained variance ratio
+        self.explained_variance_ratio_ = self.explained_variance_ / total_variance
 
         self.components = eigenvectors[0:self.n_components]
 
