@@ -72,7 +72,7 @@ def train(model, optimizer, X_train, y_train, X_val, y_val, epochs=200, batch_si
 
             params = pack_params()
 
-            # Update parameters
+            # update parameters
             optimizer.step(params, grads)
             model.W1, model.b1, model.W2, model.b2 = (
                 params['W1'], params['b1'], params['W2'], params['b2']

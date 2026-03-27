@@ -1,5 +1,5 @@
 import numpy as np
-from starter_pack.src.utils import softmax
+from starter_pack.src.helper import softmax
 
 
 class MLP:

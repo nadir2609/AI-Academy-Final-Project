@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Create the fixed digits data file and deterministic split indices."""
 
 from pathlib import Path
