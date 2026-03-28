@@ -1,4 +1,3 @@
-##!/usr/bin/env python3
 """Generate the fixed synthetic datasets for the Math4AI capstone starter pack."""
 
 from pathlib import Path
