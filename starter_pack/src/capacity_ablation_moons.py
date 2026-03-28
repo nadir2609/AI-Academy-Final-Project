@@ -9,13 +9,13 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Get the directory where this script is located
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-
 from mlp import MLP
 from train import train
 from optimizers import Adam
-import helper
+import utils
+
+# Get the directory where this script is located
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def run_capacity_ablation():
@@ -23,7 +23,7 @@ def run_capacity_ablation():
     np.random.seed(42)
 
     # Load data
-    X_train, y_train, X_val, y_val, X_test, y_test = helper.load_dataset("moons", test=True)
+    X_train, y_train, X_val, y_val, X_test, y_test = utils.load_dataset("moons", test=True)
 
     # Configuration
     hidden_widths = [2, 8, 32]
@@ -74,9 +74,9 @@ def run_capacity_ablation():
         model.b2 = best_params['b2']
 
         # Compute accuracies
-        train_acc = helper.compute_accuracy(model, X_train, y_train)
-        val_acc = helper.compute_accuracy(model, X_val, y_val)
-        test_acc = helper.compute_accuracy(model, X_test, y_test)
+        train_acc = utils.compute_accuracy(model, X_train, y_train)
+        val_acc = utils.compute_accuracy(model, X_val, y_val)
+        test_acc = utils.compute_accuracy(model, X_test, y_test)
 
         results.append({
             'hidden_width': hidden_dim,
@@ -102,7 +102,7 @@ def run_capacity_ablation():
         hidden_dim = res['hidden_width']
         test_acc = res['test_acc']
 
-        helper.plot_decision_boundary(
+        utils.plot_decision_boundary(
             model, X_all, y_all, ax=axes[idx],
             title=f"Hidden Width = {hidden_dim}\nTest Acc: {test_acc * 100:.1f}%"
         )

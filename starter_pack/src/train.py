@@ -1,19 +1,19 @@
 import numpy as np
-
+import copy
 from utils import one_hot, cross_entropy_loss
 
 
 def train_softmax(
-    model,
-    X_train: np.ndarray,
-    y_train: np.ndarray,
-    X_val: np.ndarray,
-    y_val: np.ndarray,
-    lr: float = 0.05,
-    batch_size: int = 64,
-    epochs: int = 200,
-    seed: int = 0,
-    verbose: bool = False,
+        model,
+        X_train: np.ndarray,
+        y_train: np.ndarray,
+        X_val: np.ndarray,
+        y_val: np.ndarray,
+        lr: float = 0.05,
+        batch_size: int = 64,
+        epochs: int = 200,
+        seed: int = 0,
+        verbose: bool = False,
 ) -> dict:
     """
     Mini-batch SGD training loop.
@@ -75,9 +75,6 @@ def train_softmax(
     model.b = best_b
     history["best_epoch"] = best_epoch
     return history
-import copy
-
-import numpy as np
 
 
 def train(model, optimizer, X_train, y_train, X_val, y_val, epochs=200, batch_size=64, lam=1e-4):
@@ -115,7 +112,7 @@ def train(model, optimizer, X_train, y_train, X_val, y_val, epochs=200, batch_si
         probs = model.forward(X)
         data_loss = -np.mean(np.log(probs[np.arange(y.shape[0]), y] + eps))
         loss = data_loss + l2_penalty()
-        accuracy = np.mean(np.argmax(probs, axis=1) == y) # accuracy is the fraction of correct predictions
+        accuracy = np.mean(np.argmax(probs, axis=1) == y)  # accuracy is the fraction of correct predictions
         return loss, accuracy
 
     history = {
@@ -170,4 +167,4 @@ def train(model, optimizer, X_train, y_train, X_val, y_val, epochs=200, batch_si
             best_params = copy.deepcopy(pack_params())  # deep copy for params
             best_epoch = epoch
 
-    return best_params, history,best_epoch
+    return best_params, history, best_epoch

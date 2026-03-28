@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class SGD:
     """
     Update rule:
@@ -113,15 +114,12 @@ class Adam:
 
             # Update second moment: v = beta2 * v + (1 - beta2) * g^2
             self.v[key] = self.beta2 * self.v[key] + (1 - self.beta2) * (
-                grads[key] ** 2
+                    grads[key] ** 2
             )
 
             # Bias correction
-            m_hat = self.m[key] / (1 - self.beta1**self.t)
-            v_hat = self.v[key] / (1 - self.beta2**self.t)
+            m_hat = self.m[key] / (1 - self.beta1 ** self.t)
+            v_hat = self.v[key] / (1 - self.beta2 ** self.t)
 
             # Update parameters
             params[key] -= self.lr * m_hat / (np.sqrt(v_hat) + self.eps)
-
-
-
