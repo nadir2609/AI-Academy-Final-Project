@@ -1,6 +1,6 @@
 import numpy as np
 
-from .utils import one_hot
+from utils import one_hot
 
 
 def evaluate(model, X: np.ndarray, y: np.ndarray) -> dict:

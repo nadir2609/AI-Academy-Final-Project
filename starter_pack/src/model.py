@@ -1,6 +1,6 @@
 import numpy as np
 
-from .utils import softmax
+from utils import softmax
 
 
 class SoftmaxRegression:

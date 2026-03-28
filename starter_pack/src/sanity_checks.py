@@ -1,8 +1,8 @@
 import numpy as np
 
-from .utils import softmax, cross_entropy_loss, one_hot
-from .model import SoftmaxRegression
-from .train import train_softmax
+from utils import softmax, cross_entropy_loss, one_hot
+from model import SoftmaxRegression
+from train import train_softmax
 
 
 def run_sanity_checks():

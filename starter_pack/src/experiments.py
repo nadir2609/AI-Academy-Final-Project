@@ -5,11 +5,11 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from .model import SoftmaxRegression
-from .train import train_softmax
-from .evaluate import evaluate
-from .plots import plot_decision_boundary, plot_training_dynamics
-from .pca import PCA
+from model import SoftmaxRegression
+from train import train_softmax
+from evaluate import evaluate
+from plots import plot_decision_boundary, plot_training_dynamics
+from pca import PCA
 
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"

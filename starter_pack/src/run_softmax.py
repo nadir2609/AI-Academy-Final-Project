@@ -1,19 +1,14 @@
 import time
 from pathlib import Path
-import sys
 
-ROOT_DIR = Path(__file__).resolve().parents[1]
-if str(ROOT_DIR) not in sys.path:
-    sys.path.append(str(ROOT_DIR))
-
-from src.sanity_checks import run_sanity_checks
-from src.experiments import (
+from sanity_checks import run_sanity_checks
+from experiments import (
     run_synthetic_experiment,
     run_digits_experiment,
     run_track_a,
 )
 
-DATA_DIR = ROOT_DIR / "data"
+DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 
 
 def main():

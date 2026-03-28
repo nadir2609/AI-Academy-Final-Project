@@ -1,6 +1,6 @@
 import numpy as np
 
-from .utils import one_hot, cross_entropy_loss
+from utils import one_hot, cross_entropy_loss
 
 
 def train_softmax(
