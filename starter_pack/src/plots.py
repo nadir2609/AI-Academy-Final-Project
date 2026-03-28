@@ -2,17 +2,18 @@ from pathlib import Path
 
 import numpy as np
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 
 def plot_decision_boundary(
-    model,
-    X: np.ndarray,
-    y: np.ndarray,
-    title: str,
-    save_path: Path,
-    transform=None,
+        model,
+        X: np.ndarray,
+        y: np.ndarray,
+        title: str,
+        save_path: Path,
+        transform=None,
 ):
     x_min, x_max = X[:, 0].min() - 0.5, X[:, 0].max() + 0.5
     y_min, y_max = X[:, 1].min() - 0.5, X[:, 1].max() + 0.5

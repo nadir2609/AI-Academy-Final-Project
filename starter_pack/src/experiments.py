@@ -2,6 +2,7 @@ from pathlib import Path
 
 import numpy as np
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
@@ -10,7 +11,6 @@ from train import train_softmax
 from evaluate import evaluate
 from plots import plot_decision_boundary, plot_training_dynamics
 from pca import PCA
-
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 FIG_DIR = Path(__file__).resolve().parents[1] / "figures"
@@ -30,12 +30,12 @@ def load_synthetic(path: Path):
 
 
 def run_synthetic_experiment(
-    name: str,
-    data_path: Path,
-    lr: float = 0.05,
-    epochs: int = 200,
-    lam: float = 1e-4,
-    seed: int = 0,
+        name: str,
+        data_path: Path,
+        lr: float = 0.05,
+        epochs: int = 200,
+        lam: float = 1e-4,
+        seed: int = 0,
 ):
     print(f"\n--- Synthetic experiment: {name} ---")
 
@@ -80,11 +80,11 @@ def run_synthetic_experiment(
 
 
 def run_digits_experiment(
-    seeds: list[int] | None = None,
-    lr: float = 0.05,
-    batch_size: int = 64,
-    epochs: int = 200,
-    lam: float = 1e-4,
+        seeds: list[int] | None = None,
+        lr: float = 0.05,
+        batch_size: int = 64,
+        epochs: int = 200,
+        lam: float = 1e-4,
 ) -> dict:
     if seeds is None:
         seeds = [0, 1, 2, 3, 4]

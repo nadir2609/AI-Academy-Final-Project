@@ -4,7 +4,7 @@ from pathlib import Path
 from starter_pack.src.mlp import MLP
 from starter_pack.src.train import train
 from starter_pack.src.optimizers import SGD, Momentum, Adam
-from starter_pack.src.helper import load_dataset
+from starter_pack.src.utils import load_dataset
 
 
 def plot_history(history, dataset_name):

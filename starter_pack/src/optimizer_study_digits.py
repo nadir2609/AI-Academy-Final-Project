@@ -17,7 +17,7 @@ from pathlib import Path
 from mlp import MLP
 from train import train
 from optimizers import SGD, Momentum, Adam
-import helper
+import utils
 
 
 def train_with_optimizer(optimizer_name, optimizer, X_train, y_train, X_val, y_val,
@@ -122,7 +122,7 @@ def print_results_table(results_dict, X_test, y_test):
         best_epoch = results['best_epoch']
 
         # Compute test accuracy
-        test_acc = helper.compute_accuracy(model, X_test, y_test)
+        test_acc = utils.compute_accuracy(model, X_test, y_test)
 
         print(f"{opt_name:<15} {final_val_loss:<18.6f} {final_val_acc:<12.4f} {best_epoch:<15} {test_acc:<12.4f}")
 
@@ -329,7 +329,7 @@ def main():
 
     # Load data
     print("\nLoading Digits dataset...")
-    X_train, y_train, X_val, y_val, X_test, y_test = helper.load_dataset("digits_data", test=True)
+    X_train, y_train, X_val, y_val, X_test, y_test = utils.load_dataset("digits_data", test=True)
     print_dataset_info(X_train, y_train, X_val, X_test)
 
     # Get configuration
