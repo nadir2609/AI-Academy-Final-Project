@@ -14,7 +14,7 @@ Optimizers tested:
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
-from mlp import MLP
+from model import MLP
 from train import train
 from optimizers import SGD, Momentum, Adam
 import utils

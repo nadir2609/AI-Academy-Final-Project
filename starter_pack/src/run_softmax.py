@@ -1,14 +1,11 @@
 import time
-from pathlib import Path
 
 from sanity_checks import run_sanity_checks
-from experiments import (
+from experiments_softmax import (
     run_synthetic_experiment,
     run_digits_experiment,
     run_track_a,
 )
-
-DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 
 
 def main():
@@ -16,8 +13,8 @@ def main():
 
     run_sanity_checks()
 
-    run_synthetic_experiment("Linear Gaussian", DATA_DIR / "linear_gaussian.npz")
-    run_synthetic_experiment("Moons", DATA_DIR / "moons.npz")
+    run_synthetic_experiment("Linear Gaussian", "linear_gaussian")
+    run_synthetic_experiment("Moons", "moons")
 
     digits_results = run_digits_experiment()
 

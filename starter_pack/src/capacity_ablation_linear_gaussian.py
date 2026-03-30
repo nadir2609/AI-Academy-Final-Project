@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 # Get the directory where this script is located
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-from mlp import MLP
+from model import MLP
 from train import train
 from optimizers import Adam
 import utils
@@ -37,8 +37,8 @@ def run_capacity_ablation():
     lam = 1e-4
 
     # Results output directory
-    results_dir = os.path.join(SCRIPT_DIR, '..', 'results')
-    os.makedirs(results_dir, exist_ok=True)
+    figures_dir = os.path.join(SCRIPT_DIR, '..', 'figures')
+    os.makedirs(figures_dir, exist_ok=True)
 
     # Store results
     results = []
@@ -109,7 +109,7 @@ def run_capacity_ablation():
 
     plt.suptitle("Capacity Ablation: Decision Boundaries on Linear Gaussian Dataset", fontsize=14, y=1.02)
     plt.tight_layout()
-    output_path = os.path.join(results_dir, 'capacity_ablation_linear_gaussian_boundaries.png')
+    output_path = os.path.join(figures_dir, 'capacity_ablation_linear_gaussian_boundaries.png')
     plt.savefig(output_path, dpi=150, bbox_inches='tight')
     print(f"\n✓ Saved decision boundaries to: {output_path}")
     plt.show()
@@ -138,7 +138,7 @@ def run_capacity_ablation():
 
     plt.suptitle("Capacity Ablation: Training Dynamics on Linear Gaussian", fontsize=14, y=1.02)
     plt.tight_layout()
-    output_path = os.path.join(results_dir, 'capacity_ablation_linear_gaussian_curves.png')
+    output_path = os.path.join(figures_dir, 'capacity_ablation_linear_gaussian_curves.png')
     plt.savefig(output_path, dpi=150, bbox_inches='tight')
     print(f"✓ Saved training curves to: {output_path}")
     plt.show()
