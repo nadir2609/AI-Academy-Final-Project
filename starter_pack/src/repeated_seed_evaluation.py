@@ -14,7 +14,7 @@ from pathlib import Path
 import copy
 
 # Import our implementations
-from mlp import MLP
+from model import MLP
 from train import train
 from optimizers import Adam, SGD
 from utils import load_dataset, softmax

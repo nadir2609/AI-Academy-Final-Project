@@ -11,27 +11,17 @@ from train import train_softmax
 from evaluate import evaluate
 from plots import plot_decision_boundary, plot_training_dynamics
 from pca import PCA
+from utils import load_dataset
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 FIG_DIR = Path(__file__).resolve().parents[1] / "figures"
 FIG_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def load_synthetic(path: Path):
-    data = np.load(path)
-    return (
-        data["X_train"],
-        data["y_train"],
-        data["X_val"],
-        data["y_val"],
-        data["X_test"],
-        data["y_test"],
-    )
-
 
 def run_synthetic_experiment(
         name: str,
-        data_path: Path,
+        dataset_name: str,
         lr: float = 0.05,
         epochs: int = 200,
         lam: float = 1e-4,
@@ -39,7 +29,7 @@ def run_synthetic_experiment(
 ):
     print(f"\n--- Synthetic experiment: {name} ---")
 
-    X_tr, y_tr, X_v, y_v, X_te, y_te = load_synthetic(data_path)
+    X_tr, y_tr, X_v, y_v, X_te, y_te = load_dataset(dataset_name,test=True)
     d = X_tr.shape[1]
     k = len(np.unique(y_tr))
 
@@ -89,16 +79,7 @@ def run_digits_experiment(
     if seeds is None:
         seeds = [0, 1, 2, 3, 4]
 
-    data = np.load(DATA_DIR / "digits_data.npz")
-    split = np.load(DATA_DIR / "digits_split_indices.npz")
-
-    X_all, y_all = data["X"], data["y"]
-    X_tr = X_all[split["train_idx"]]
-    y_tr = y_all[split["train_idx"]]
-    X_v = X_all[split["val_idx"]]
-    y_v = y_all[split["val_idx"]]
-    X_te = X_all[split["test_idx"]]
-    y_te = y_all[split["test_idx"]]
+    X_tr, y_tr, X_v, y_v, X_te, y_te = load_dataset("digits_data",test=True)
 
     d = X_tr.shape[1]
     k = 10
