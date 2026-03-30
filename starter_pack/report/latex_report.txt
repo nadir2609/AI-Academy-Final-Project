@@ -1,0 +1,447 @@
+% ============================================================================
+% Math4AI Capstone Report
+% From Linear Scores to a Single Hidden Layer: A Mathematical Study
+% ============================================================================
+
+\documentclass[sigconf,screen,nonacm]{acmart}
+
+% - ACM metadata cleanup for course-project use -
+\settopmatter{printacmref=false}
+\renewcommand\footnotetextcopyrightpermission[1]{}
+\pagestyle{plain}
+\setcopyright{none}
+
+% - Project metadata -
+\newcommand{\ProjectTitle}{From Linear Scores to a Single Hidden Layer: A Mathematical Study of Simple Learning Systems}
+\newcommand{\CourseName}{National AI Center - AI Academy}
+\newcommand{\ProjectType}{Math4AI Final Capstone Project}
+
+% - Packages and local macros -
+\input{macros}
+
+% - PDF metadata -
+\hypersetup{
+  pdftitle={\ProjectTitle},
+  pdfauthor={Student Team},
+  pdfsubject={Math4AI Capstone Report},
+  pdfkeywords={softmax regression, neural networks, backpropagation, cross-entropy, classification, NumPy}
+}
+
+\title{\ProjectTitle}
+\subtitle{\ProjectType}
+
+\author{Student 1}
+\affiliation{%
+  \institution{\CourseName}
+  \country{Azerbaijan}
+}
+\email{student1@example.com}
+
+\author{Student 2}
+\affiliation{%
+  \institution{\CourseName}
+  \country{Azerbaijan}
+}
+\email{student2@example.com}
+
+\author{Student 3}
+\affiliation{%
+  \institution{\CourseName}
+  \country{Azerbaijan}
+}
+\email{student3@example.com}
+
+\begin{document}
+
+\begin{abstract}
+This report investigates when a one-hidden-layer neural network meaningfully outperforms linear softmax regression, and when the additional complexity is unnecessary. We compare multiclass softmax regression and a one-hidden-layer neural network with $\tanh$ activations on three classification tasks: a linearly separable Gaussian dataset, a nonlinear moons dataset, and the 64-dimensional digits benchmark. Our experiments demonstrate that the linear model achieves 95\% test accuracy on the Gaussian task-matching the MLP-while the moons dataset requires nonlinear capacity, with test accuracy improving from 85\% (width=2) to 97.5\% (width=32). On digits, the MLP (h=32) achieves 95.1\% $\pm$ 0.4\% test accuracy compared to softmax's 93.6\% $\pm$ 0.6\%, with cross-entropy reduced from 0.269 to 0.162. PCA analysis reveals that 40 principal components capture 98.9\% of variance, explaining why linear models remain competitive on this high-dimensional task.
+\end{abstract}
+
+\keywords{softmax regression, neural networks, backpropagation, cross-entropy, classification, NumPy}
+
+\maketitle
+
+\section{Introduction / Framing}
+
+\paragraph{Central question.}
+When does a one-hidden-layer nonlinear classifier genuinely improve on a linear decision rule, and when is additional model complexity unnecessary?
+
+This question is fundamental to understanding the geometry of classification problems. A linear classifier can only separate classes using hyperplanes in the input space, while a neural network with a hidden layer can learn nonlinear transformations that reshape the data before applying a linear decision rule. However, additional capacity comes with costs: more parameters to optimize, potential for overfitting, and increased computational burden. This capstone investigates when these costs are justified through controlled experiments on datasets with distinct geometric properties.
+
+\paragraph{Contributions.}
+Our work makes the following contributions:
+\begin{enumerate}[leftmargin=*,itemsep=0.25em]
+    \item Complete derivation of softmax cross-entropy as negative log-likelihood under a categorical distribution, with stable numerical implementation.
+    \item Full backpropagation derivation for the one-hidden-layer network with $\tanh$ activations, including vectorized mini-batch gradients.
+    \item Controlled comparison demonstrating that linear models suffice for linearly separable data (Gaussian) but fail on nonlinearly separable data (moons).
+    \item Capacity ablation showing how hidden width affects decision boundary complexity, optimizer comparison (SGD, Momentum, Adam), and repeated-seed evaluation with 95\% confidence intervals.
+\end{enumerate}
+
+\paragraph{Preview of findings.}
+Our experiments reveal three key insights: (1) On the linear Gaussian task, both models achieve identical 95\% test accuracy, confirming that extra capacity provides no benefit when the problem is linearly separable. (2) On the moons task, the linear model achieves only 85\% accuracy with a suboptimal straight boundary, while the MLP with width=32 achieves 97.5\% with a curved boundary matching the data structure. (3) On digits, the MLP improves test accuracy by 1.5 percentage points and reduces cross-entropy by 40\%, with the improvement being statistically significant (non-overlapping 95\% CIs).
+
+\section{Background and Mathematical Setup}
+
+\subsection{Supervised classification and data splits}
+We consider supervised classification with labeled pairs $(\vx^{(i)}, y^{(i)})$ where $\vx^{(i)} \in \R^d$ is an input feature vector and $y^{(i)} \in \{0, 1, \ldots, k-1\}$ is the class label. Following standard practice, we partition data into three disjoint sets: training (for parameter estimation), validation (for hyperparameter selection and early stopping), and test (for final unbiased evaluation). The validation set is used to select the best epoch checkpoint based on cross-entropy loss, ensuring the test set remains untouched until final reporting.
+
+\subsection{Softmax regression}
+For input $\vx \in \R^d$ and $k$ classes, the linear model computes logits
+\begin{equation}
+    \vs(\vx) = \mW \vx + \vb,
+\end{equation}
+where $\mW \in \R^{k \times d}$ and $\vb \in \R^k$. The softmax function converts logits to probabilities:
+\begin{equation}
+    p_j(\vx) = \frac{\exp(s_j(\vx))}{\sum_{\ell=1}^{k} \exp(s_{\ell}(\vx))}.
+\end{equation}
+
+The decision boundary between classes $i$ and $j$ occurs where $p_i(\vx) = p_j(\vx)$, which implies $s_i(\vx) = s_j(\vx)$. This yields the affine constraint $(\mW_i - \mW_j)^\top \vx + (b_i - b_j) = 0$, confirming that all decision boundaries are hyperplanes in the input space.
+
+\subsection{Cross-entropy as negative log-likelihood}
+Given true class $y$, the cross-entropy loss is
+\begin{equation}
+    \loss(\vx, y) = -\log p_y(\vx).
+\end{equation}
+
+This can be interpreted probabilistically: if we model $P(Y=j|\vx) = p_j(\vx)$, then the log-likelihood of observing label $y$ is $\log p_y(\vx)$. Minimizing cross-entropy over the training set is equivalent to maximum likelihood estimation:
+\begin{equation}
+    \min_{\mW,\vb} \frac{1}{n}\sum_{i=1}^{n} \loss(\vx^{(i)}, y^{(i)}) = \max_{\mW,\vb} \frac{1}{n}\sum_{i=1}^{n} \log p_{y^{(i)}}(\vx^{(i)}).
+\end{equation}
+
+For numerical stability, we implement softmax with the log-sum-exp trick: subtract $\max_j s_j$ from all logits before exponentiation.
+
+\subsection{One-hidden-layer neural network}
+The nonlinear model computes:
+\begin{equation}
+    \vh = \tanhact(\mWone \vx + \vbone), \qquad \vs = \mWtwo \vh + \vbtwo,
+\end{equation}
+where $\mWone \in \R^{h \times d}$, $\vbone \in \R^h$, $\mWtwo \in \R^{k \times h}$, and $\vbtwo \in \R^k$. The hidden layer transforms the input through $h$ nonlinear features. The $\tanh$ activation squashes values to $[-1, 1]$ and has derivative $\tanh'(z) = 1 - \tanh^2(z)$.
+
+Geometrically, the hidden layer learns a nonlinear mapping $\phi: \R^d \to \R^h$ such that the transformed data $\phi(\vx)$ becomes more linearly separable. The final layer then applies softmax regression in this learned feature space.
+
+\subsection{Backpropagation derivation}
+For mini-batch $\mX \in \R^{n \times d}$ with one-hot labels $\mY \in \R^{n \times k}$, the forward pass computes:
+\begin{align}
+    \mZ_1 &= \mX \mWone^\top + \vone \vbone^\top \in \R^{n \times h}, \\
+    \mH &= \tanhact(\mZ_1) \in \R^{n \times h}, \\
+    \mS &= \mH \mWtwo^\top + \vone \vbtwo^\top \in \R^{n \times k}, \\
+    \mP &= \softmaxrow(\mS) \in \R^{n \times k}.
+\end{align}
+
+The backward pass applies the chain rule. Starting from the loss gradient:
+\begin{align}
+    \frac{\partial \loss}{\partial \mS} &= \frac{1}{n}(\mP - \mY) \in \R^{n \times k}, \\
+    \frac{\partial \loss}{\partial \mWtwo} &= \mH^\top \frac{\partial \loss}{\partial \mS}, \quad
+    \frac{\partial \loss}{\partial \vbtwo} = \vone^\top \frac{\partial \loss}{\partial \mS}, \\
+    \frac{\partial \loss}{\partial \mH} &= \frac{\partial \loss}{\partial \mS} \mWtwo, \\
+    \frac{\partial \loss}{\partial \mZ_1} &= \frac{\partial \loss}{\partial \mH} \odot (1 - \mH^2), \\
+    \frac{\partial \loss}{\partial \mWone} &= \mX^\top \frac{\partial \loss}{\partial \mZ_1}, \quad
+    \frac{\partial \loss}{\partial \vbone} = \vone^\top \frac{\partial \loss}{\partial \mZ_1}.
+\end{align}
+
+\subsection{Geometric expectations for the datasets}
+The \textbf{Linear Gaussian} dataset consists of two Gaussian blobs with means separated along a diagonal. The optimal Bayes classifier is linear, so we expect softmax regression to achieve near-optimal performance. The MLP should not improve significantly.
+
+The \textbf{Moons} dataset has two interleaved crescent shapes that cannot be separated by any hyperplane. A linear classifier must compromise with a suboptimal straight boundary, while the MLP can learn a curved boundary following the data structure.
+
+The \textbf{Digits} dataset is 64-dimensional with 10 classes. While the raw problem may have complex structure, high-dimensional data often exhibits approximate linear separability due to the ``blessing of dimensionality''-random high-dimensional vectors tend to be nearly orthogonal.
+
+\section{Methods}
+
+\subsection{Datasets}
+We use three datasets from the starter pack:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Linear Gaussian} (\texttt{linear\_gaussian.npz}): 2D binary classification with two Gaussian blobs, mild class overlap.
+    \item \textbf{Moons} (\texttt{moons.npz}): 2D binary classification with interleaved crescents, inherently nonlinear.
+    \item \textbf{Digits} (\texttt{digits\_data.npz}): $8 \times 8$ grayscale digit images (0-9) flattened to 64 dimensions, with fixed train/val/test indices in \texttt{digits\_split\_indices.npz}.
+\end{itemize}
+
+\subsection{Models}
+We implement two models in NumPy:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Softmax Regression}: Linear model with $\mW \in \R^{k \times d}$, $\vb \in \R^k$, trained with mini-batch SGD.
+    \item \textbf{MLP}: One hidden layer with $\tanh$ activation, hidden width $h=32$ for digits (and $h \in \{2, 8, 32\}$ for ablation), trained with Adam optimizer.
+\end{itemize}
+
+Both use Xavier initialization: weights sampled from $\mathcal{N}(0, \sqrt{2/(d_{\text{in}} + d_{\text{out}})})$.
+
+\subsection{Training protocol}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Batch size}: 64 for digits, 32 for synthetic datasets.
+    \item \textbf{Epochs}: 200 for digits, 500 for synthetic (allowing convergence).
+    \item \textbf{Learning rate}: 0.05 for softmax (SGD), 0.001 for MLP (Adam).
+    \item \textbf{Regularization}: L2 penalty with $\lambda = 10^{-4}$ on weights only.
+    \item \textbf{Model selection}: Checkpoint at epoch with lowest validation cross-entropy.
+    \item \textbf{Numerical stability}: Log-sum-exp trick, clipping probabilities to $[10^{-15}, 1]$ before log.
+\end{itemize}
+
+\subsection{Evaluation metrics}
+We report two metrics:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Accuracy}: Fraction of correctly classified examples, $\frac{1}{n}\sum_i \mathbf{1}[\hat{y}^{(i)} = y^{(i)}]$.
+    \item \textbf{Cross-entropy}: Mean negative log-probability of true class, $-\frac{1}{n}\sum_i \log p_{y^{(i)}}(\vx^{(i)})$.
+\end{itemize}
+Cross-entropy measures calibration and confidence, not just correctness. A model can have high accuracy but poor cross-entropy if it makes overconfident mistakes.
+
+\subsection{Implementation sanity checks}
+Before running experiments, we verified our implementation:
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Softmax normalization}: Row sums equal 1.0 within $10^{-12}$ tolerance.
+    \item \textbf{Loss decrease}: Training loss decreased from initial value after gradient steps.
+
+    \item \textbf{Gradient check}: Analytical gradients matched numerical (finite-difference) gradients with max relative error $< 10^{-4}$.
+    \item \textbf{No NaN/Inf}: Training completed without numerical overflow.
+\end{enumerate}
+
+\section{Experiments}
+
+\subsection{Core comparison on the linear Gaussian task}
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[b]{0.48\columnwidth}
+        \includegraphics[width=\linewidth]{../figures/softmax_linear_gaussian_train_boundary.png}
+        \caption{Training set}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\columnwidth}
+        \includegraphics[width=\linewidth]{../figures/softmax_linear_gaussian_test_boundary.png}
+        \caption{Test set}
+    \end{subfigure}
+    \caption{Softmax regression decision boundary on Linear Gaussian dataset. The linear boundary cleanly separates the two Gaussian clusters.}
+    \label{fig:gaussian-softmax}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{../figures/capacity_ablation_linear_gaussian_boundaries.png}
+    \caption{MLP decision boundaries on Linear Gaussian with varying hidden widths. All three configurations achieve 95\% test accuracy with effectively linear boundaries.}
+    \label{fig:gaussian-mlp}
+\end{figure}
+
+On the linear Gaussian task, softmax regression achieves \textbf{95\% test accuracy} with a clean diagonal boundary separating the two clusters (\Cref{fig:gaussian-softmax}). The MLP also achieves 95\% test accuracy across all hidden widths tested (\Cref{fig:gaussian-mlp}). Despite having nonlinear capacity, the MLP learns boundaries that are effectively linear-additional parameters provide no benefit.
+
+This confirms our geometric expectation: when the optimal decision boundary is linear, a linear model is sufficient. The small overlap region between classes limits maximum achievable accuracy to approximately 95\%.
+
+\subsection{Core comparison on the moons task}
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}[b]{0.48\columnwidth}
+        \includegraphics[width=\linewidth]{../figures/softmax_moons_train_boundary.png}
+        \caption{Softmax (train)}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\columnwidth}
+        \includegraphics[width=\linewidth]{../figures/softmax_moons_test_boundary.png}
+        \caption{Softmax (test)}
+    \end{subfigure}
+    \caption{Softmax regression on Moons dataset. The linear boundary cannot capture the crescent structure, misclassifying many points in the interleaved region.}
+    \label{fig:moons-softmax}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{../figures/capacity_ablation_decision_boundaries.png}
+    \caption{MLP decision boundaries on Moons with hidden widths 2, 8, and 32. Test accuracy improves from 85\% to 97.5\% as capacity increases.}
+    \label{fig:moons-mlp}
+\end{figure}
+
+The moons task reveals the representational limitations of linear models. Softmax regression achieves approximately \textbf{85\% test accuracy} with a diagonal boundary that cuts through both crescents (\Cref{fig:moons-softmax}). This is the best any linear classifier can do-it minimizes cross-entropy given the hyperplane constraint.
+
+The MLP shows dramatic improvement (\Cref{fig:moons-mlp}):
+\begin{itemize}[leftmargin=*]
+    \item Width=2: 85.0\% (nearly linear, limited capacity)
+    \item Width=8: 95.0\% (curved boundary emerges)
+    \item Width=32: 97.5\% (smooth boundary following data structure)
+\end{itemize}
+
+This demonstrates that the hidden layer provides genuine representational benefit when the problem requires nonlinear separation.
+
+\subsection{Core comparison on the digits benchmark}
+
+\begin{table}[t]
+    \centering
+    \caption{Repeated-seed evaluation on Digits benchmark (5 seeds, 95\% CI using $t$-critical = 2.776).}
+    \label{tab:digits-results}
+    \begin{tabular}{lcc}
+        \toprule
+        Model & Test Accuracy & Test Cross-Entropy \\
+        \midrule
+        Softmax Regression & 93.6\% $\pm$ 0.6\% & 0.269 $\pm$ 0.008 \\
+        MLP (h=32) & 95.1\% $\pm$ 0.4\% & 0.162 $\pm$ 0.005 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{../figures/repeated_seed_evaluation.png}
+    \caption{Repeated-seed evaluation comparing Softmax Regression and MLP on Digits. Individual seed results shown as black dots, bars show means, error bars show 95\% CI.}
+    \label{fig:repeated-seed}
+\end{figure}
+
+On the digits benchmark, the MLP outperforms softmax regression on both metrics (\Cref{tab:digits-results}, \Cref{fig:repeated-seed}). The accuracy improvement of 1.5 percentage points is statistically significant-the 95\% confidence intervals do not overlap. More notably, cross-entropy is reduced by 40\% (0.269 → 0.162), indicating substantially better-calibrated predictions.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{../figures/softmax_digits_training_dynamics.png}
+    \caption{Training dynamics for softmax regression on Digits. Loss decreases smoothly, validation accuracy plateaus around epoch 150.}
+    \label{fig:softmax-dynamics}
+\end{figure}
+
+\subsection{Required capacity ablation on moons}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{../figures/capacity_ablation_training_curves.png}
+    \caption{Training dynamics for capacity ablation on Moons. Larger width achieves lower loss and higher accuracy.}
+    \label{fig:capacity-training}
+\end{figure}
+
+The capacity ablation (\Cref{fig:moons-mlp}, \Cref{fig:capacity-training}) reveals:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Width=2}: With only 2 hidden units, the network has limited capacity to form nonlinear boundaries. It learns an almost-linear decision rule (85\% accuracy), similar to softmax regression.
+    \item \textbf{Width=8}: Eight hidden units provide enough capacity to learn a moderately curved boundary (95\% accuracy). Training loss converges faster than width=2.
+    \item \textbf{Width=32}: Maximum capacity tested achieves 97.5\% accuracy with a smooth, well-fitted boundary. Interestingly, there is no visible overfitting-validation accuracy remains stable.
+\end{itemize}
+
+This ablation demonstrates the ``capacity-problem complexity'' tradeoff: under-capacity models cannot represent the required decision boundary, while appropriate capacity enables learning the true data structure.
+
+\subsection{Required optimizer study on digits}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{../figures/optimizer_comparison_digits_loss.png}
+    \caption{Loss curves for three optimizers on Digits (MLP-32). Momentum converges fastest.}
+    \label{fig:optimizer-loss}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{../figures/optimizer_comparison_digits_accuracy.png}
+    \caption{Accuracy curves for three optimizers on Digits. All three achieve similar final accuracy, but Momentum is most stable.}
+    \label{fig:optimizer-acc}
+\end{figure}
+
+We compare SGD (lr=0.05), Momentum (lr=0.05, $\beta$=0.9), and Adam (lr=0.001) on the MLP-32 model (\Cref{fig:optimizer-loss}, \Cref{fig:optimizer-acc}).
+
+Key observations:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Momentum} achieves the fastest convergence and lowest final loss, reaching near-optimal performance within 25 epochs.
+    \item \textbf{Adam} starts slowly (due to small learning rate for stability) but converges to similar final performance.
+    \item \textbf{SGD} converges slowest, requiring the full 200 epochs to approach optimal loss.
+\end{itemize}
+
+All three optimizers achieve approximately 97\% validation accuracy, confirming that optimizer choice primarily affects convergence speed rather than final performance for this well-behaved problem.
+
+\subsection{Required failure-case analysis}
+
+\textbf{Softmax achieves only 85\% accuracy on moons while 
+MLP achieves 98\%.}
+
+On datasets like Moons dataset, simple linear models such as Softmax regression struggle, highlighting why more flexible models like Multilayer Perceptron are often necessary.
+
+\textbf{Mechanism}: Softmax regression computes s(x) = Wx + b, producing linear decision boundaries. The moons dataset requires a curved separator. Mathematically, no choice of W and b can perfectly separate two interleaved crescents with a line. This is a fundamental limitation of the model class, not a training failure.
+
+\textbf{Lesson}:Model complexity must match data complexity. When class boundaries are inherently nonlinear, a linear model will fail regardless of training duration or hyperparameter tuning.
+
+\section{Advanced Track}
+
+\subsection{Track A: PCA/SVD and input geometry}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{../figures/track_a_scree_plot.png}
+    \caption{Scree plot for Digits dataset. Left: individual variance explained per component. Right: cumulative variance with key thresholds marked.}
+    \label{fig:scree}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.7\columnwidth]{../figures/track_a_pca2d.png}
+    \caption{2D PCA projection of Digits training set. PC1 and PC2 explain 28.6\% of variance combined. Digit clusters are partially separable but heavily overlapped.}
+    \label{fig:pca2d}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{../figures/track_a_pca_comparison.png}
+    \caption{Softmax performance vs PCA dimension. Accuracy plateaus after 20 components; cross-entropy continues decreasing with more components.}
+    \label{fig:pca-comparison}
+\end{figure}
+
+PCA analysis reveals the intrinsic dimensionality of the digits data (\Cref{fig:scree}):
+\begin{itemize}[leftmargin=*]
+    \item $m=10$: 74.1\% cumulative variance
+    \item $m=20$: 89.6\% cumulative variance
+    \item $m=40$: 98.9\% cumulative variance
+\end{itemize}
+
+The 2D visualization (\Cref{fig:pca2d}) shows partial cluster separation, with digits 0, 4, and 6 forming distinct regions while others overlap substantially.
+
+Softmax regression on PCA-reduced features (\Cref{fig:pca-comparison}) achieves:
+\begin{itemize}[leftmargin=*]
+    \item $m=10$: 90\% test accuracy, 0.37 cross-entropy
+    \item $m=20$: 93\% test accuracy, 0.29 cross-entropy
+    \item $m=40$: 94\% test accuracy, 0.27 cross-entropy
+    \item $m=64$ (full): 93.6\% test accuracy, 0.27 cross-entropy
+\end{itemize}
+
+\textbf{Interpretation}: The digits data has an effective dimensionality of approximately 20-40. Beyond this, additional dimensions add noise rather than signal. This explains why the linear model performs well: when projected to principal components, class boundaries are approximately linear. The MLP's advantage comes from learning task-specific nonlinear features rather than purely exploiting high dimensionality.
+
+\section{Discussion}
+
+\paragraph{When is the linear model sufficient?}
+Our experiments demonstrate that linear softmax regression is geometrically sufficient when class boundaries are approximately linear in the input space. On the Gaussian dataset, the linear model achieved optimal 95\% accuracy. On digits, the linear model achieved 93.6\%-only 1.5 points below the MLP despite having 10x fewer parameters. This suggests many real-world problems may be ``effectively linear'' in high-dimensional feature spaces.
+
+\paragraph{What representational change does the hidden layer provide?}
+The hidden layer learns a nonlinear feature transformation that makes the problem more linearly separable. On moons, this manifests as a curved decision boundary impossible for any linear model. On digits, the improvement is more subtle: the MLP learns combinations of pixel patterns that better distinguish visually similar digits (e.g., 3 vs 8).
+
+\paragraph{When does additional complexity fail to justify itself?}
+On the Gaussian task, the MLP provided zero improvement over softmax regression across all capacity levels. The additional parameters only increased computational cost without improving accuracy. This illustrates the principle of parsimony: when a simple model suffices, prefer it.
+
+\paragraph{What does the failure case teach?}
+The under-capacity MLP (width=2) on moons shows that nonlinearity alone is insufficient-the network must have enough hidden units to represent the required decision boundary. This has practical implications: model capacity should be chosen based on problem complexity, not arbitrarily.
+
+\paragraph{Value of repeated-seed evaluation}
+Single-seed evaluation can be misleading due to initialization variance. Our repeated-seed results show that the 1.5\% accuracy gap between softmax and MLP is robust across 5 seeds with non-overlapping 95\% confidence intervals. This provides statistical confidence that the MLP genuinely outperforms the linear model on digits, rather than benefiting from lucky initialization.
+
+\section{Limitations}
+
+This study has several limitations:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Dataset scope}: We tested only three datasets. Conclusions may not generalize to larger-scale problems (ImageNet, text classification) or different modalities.
+    \item \textbf{Architecture restriction}: We used only one hidden layer with tanh activation. Deeper networks, different activations (ReLU, GELU)
+    \item \textbf{Hyperparameter sensitivity}: We used default hyperparameters without extensive tuning. Better-tuned softmax might close the gap with MLP.
+    \item \textbf{No regularization comparison}: We used fixed L2 regularization. Dropout, data augmentation, or other techniques might benefit one model more than another.
+\end{itemize}
+
+Our conclusions apply to the specific experimental setup tested and should not be overgeneralized to all classification problems.
+
+
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{references}
+
+\appendix
+
+\section{Supplementary Training Curves}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{../figures/capacity_ablation_linear_gaussian_curves.png}
+    \caption{Training dynamics for capacity ablation on Linear Gaussian dataset.}
+    \label{fig:gaussian-curves}
+\end{figure}
+
+\section{Contribution Statement}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Student 1}: Implemented softmax regression, sanity checks, and experiments on synthetic datasets.
+    \item \textbf{Student 2}: Implemented MLP, backpropagation, optimizers, and capacity ablation studies.
+    \item \textbf{Student 3}: Implemented PCA analysis (Track A), repeated-seed evaluation, and report writing.
+\end{itemize}
+
+\end{document}

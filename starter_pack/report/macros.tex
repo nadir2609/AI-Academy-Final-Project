@@ -1,0 +1,71 @@
+% ============================================================================
+% Local macros / packages for the Math4AI ACM-style report
+% ============================================================================
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,amsfonts,mathtools,bm}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{siunitx}
+\usepackage{hyperref}
+\usepackage[capitalize,noabbrev]{cleveref}
+
+% --- Hyperref colors ---
+\definecolor{linkblue}{RGB}{0,70,140}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=linkblue,
+  citecolor=linkblue,
+  urlcolor=linkblue
+}
+
+% --- Better lists and tables ---
+\setlist[itemize]{itemsep=0.2em,topsep=0.3em}
+\setlist[enumerate]{itemsep=0.2em,topsep=0.3em}
+\sisetup{detect-all=true}
+
+% --- Math shortcuts ---
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\1}{\mathbf{1}}
+\newcommand{\vone}{\mathbf{1}}
+\newcommand{\T}{\mathsf{T}}
+\newcommand{\loss}{\mathcal{L}}
+\newcommand{\softmax}{\operatorname{softmax}}
+\newcommand{\softmaxrow}{\operatorname{softmax}_{\mathrm{row}}}
+\newcommand{\ce}{\operatorname{CE}}
+\newcommand{\relu}{\operatorname{ReLU}}
+\newcommand{\tanhact}{\operatorname{tanh}}
+
+% --- Vectors and matrices ---
+\newcommand{\vx}{\mathbf{x}}
+\newcommand{\vy}{\mathbf{y}}
+\newcommand{\vh}{\mathbf{h}}
+\newcommand{\vs}{\mathbf{s}}
+\newcommand{\vp}{\mathbf{p}}
+\newcommand{\vb}{\mathbf{b}}
+\newcommand{\vbone}{\mathbf{b}_1}
+\newcommand{\vbtwo}{\mathbf{b}_2}
+\newcommand{\mX}{\mathbf{X}}
+\newcommand{\mY}{\mathbf{Y}}
+\newcommand{\mH}{\mathbf{H}}
+\newcommand{\mP}{\mathbf{P}}
+\newcommand{\mS}{\mathbf{S}}
+\newcommand{\mW}{\mathbf{W}}
+\newcommand{\mWone}{\mathbf{W}_1}
+\newcommand{\mWtwo}{\mathbf{W}_2}
+\newcommand{\mZ}{\mathbf{Z}}
+
+% --- Common textual helpers ---
+\newcommand{\etal}{\emph{et al.}}
+\newcommand{\ie}{\emph{i.e.}, }
+\newcommand{\eg}{\emph{e.g.}, }
+\newcommand{\vsfull}{\emph{vs.}}
