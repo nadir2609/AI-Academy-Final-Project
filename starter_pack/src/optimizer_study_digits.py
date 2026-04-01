@@ -308,16 +308,16 @@ def plot_accuracy_comparison(results_dict, save_path):
     plt.show()
 
 
-def generate_all_plots(results, figures_dir):
+def generate_all_plots(results, results_dir):
     """Generate all comparison plots."""
-    figures_dir.mkdir(parents=True, exist_ok=True)
+    results_dir.mkdir(parents=True, exist_ok=True)
 
     # Generate loss plots
-    loss_plot_path = figures_dir / 'optimizer_comparison_digits_loss.png'
+    loss_plot_path = results_dir / 'optimizer_comparison_digits_loss.png'
     plot_loss_comparison(results, loss_plot_path)
 
     # Generate accuracy plots
-    acc_plot_path = figures_dir / 'optimizer_comparison_digits_accuracy.png'
+    acc_plot_path = results_dir / 'optimizer_comparison_digits_accuracy.png'
     plot_accuracy_comparison(results, acc_plot_path)
 
 
@@ -344,18 +344,14 @@ def main():
     results = train_all_optimizers(optimizers, config, X_train, y_train, X_val, y_val)
 
     # Generate all comparison plots
-    figures_dir = Path(__file__).parent.parent / 'figures'
-    generate_all_plots(results, figures_dir)
+    results_dir = Path(__file__).parent.parent / 'results'
+    generate_all_plots(results, results_dir)
 
     # Print results table
     print_results_table(results, X_test, y_test)
 
     # Analyze convergence
     analyze_convergence(results)
-
-    print("\n" + "#" * 80)
-    print("OPTIMIZER STUDY COMPLETED!")
-    print("#" * 80 + "\n")
 
 
 if __name__ == '__main__':

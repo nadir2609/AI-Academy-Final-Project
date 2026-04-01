@@ -14,7 +14,7 @@ from pca import PCA
 from utils import load_dataset
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
-FIG_DIR = Path(__file__).resolve().parents[1] / "figures"
+FIG_DIR = Path(__file__).resolve().parents[1] / "results"
 FIG_DIR.mkdir(parents=True, exist_ok=True)
 
 
@@ -200,7 +200,7 @@ def run_track_a(digits_results: dict):
     plt.tight_layout()
     fig.savefig(FIG_DIR / "track_a_scree_plot.png", dpi=150)
     plt.close(fig)
-    print("  Saved: figures/track_a_scree_plot.png")
+    print("  Saved: results/track_a_scree_plot.png")
 
     for m in [10, 20, 40]:
         print(f"  m={m:2d}: cumulative explained variance = {cum_ev[m - 1] * 100:.2f}%")
@@ -231,7 +231,7 @@ def run_track_a(digits_results: dict):
     plt.tight_layout()
     fig.savefig(FIG_DIR / "track_a_pca2d.png", dpi=150)
     plt.close(fig)
-    print("  Saved: figures/track_a_pca2d.png")
+    print("  Saved: results/track_a_pca2d.png")
 
     pca_dims = [10, 20, 40]
     print(f"\n  Softmax accuracy at fixed PCA dimensions m ∈ {pca_dims}")
@@ -300,6 +300,6 @@ def run_track_a(digits_results: dict):
     plt.tight_layout()
     fig.savefig(FIG_DIR / "track_a_pca_comparison.png", dpi=150)
     plt.close(fig)
-    print("  Saved: figures/track_a_pca_comparison.png")
+    print("  Saved: results/track_a_pca_comparison.png")
 
     return track_a_results

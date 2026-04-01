@@ -37,8 +37,8 @@ def run_capacity_ablation():
     lam = 1e-4
 
     # Results output directory
-    figures_dir = os.path.join(SCRIPT_DIR, '..', 'figures')
-    os.makedirs(figures_dir, exist_ok=True)
+    results_dir = os.path.join(SCRIPT_DIR, '..', 'results')
+    os.makedirs(results_dir, exist_ok=True)
 
     # Store results
     results = []
@@ -109,9 +109,8 @@ def run_capacity_ablation():
 
     plt.suptitle("Capacity Ablation: Decision Boundaries on Linear Gaussian Dataset", fontsize=14, y=1.02)
     plt.tight_layout()
-    output_path = os.path.join(figures_dir, 'capacity_ablation_linear_gaussian_boundaries.png')
+    output_path = os.path.join(results_dir, 'capacity_ablation_linear_gaussian_boundaries.png')
     plt.savefig(output_path, dpi=150, bbox_inches='tight')
-    print(f"\n✓ Saved decision boundaries to: {output_path}")
     plt.show()
 
     # Plot training curves
@@ -138,20 +137,9 @@ def run_capacity_ablation():
 
     plt.suptitle("Capacity Ablation: Training Dynamics on Linear Gaussian", fontsize=14, y=1.02)
     plt.tight_layout()
-    output_path = os.path.join(figures_dir, 'capacity_ablation_linear_gaussian_curves.png')
+    output_path = os.path.join(results_dir, 'capacity_ablation_linear_gaussian_curves.png')
     plt.savefig(output_path, dpi=150, bbox_inches='tight')
-    print(f"✓ Saved training curves to: {output_path}")
     plt.show()
-
-    # Analysis summary
-    print("\n" + "=" * 70)
-    print("Analysis: How does capacity affect generalization on Linear Gaussian?")
-    print("=" * 70)
-    print("\nKey Observations:")
-    print("- Linear Gaussian has linearly separable classes")
-    print("- Even small capacity (h=2) should achieve high accuracy")
-    print("- Larger capacity may not provide significant benefit")
-    print("- This demonstrates when simple models are sufficient")
 
     # Compare results
     print(f"\nComparison:")

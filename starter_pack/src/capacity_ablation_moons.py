@@ -111,7 +111,6 @@ def run_capacity_ablation():
     plt.tight_layout()
     output_path = os.path.join(results_dir, 'capacity_ablation_moons_decision_boundaries.png')
     plt.savefig(output_path, dpi=150, bbox_inches='tight')
-    print(f"\n✓ Saved decision boundaries to: {output_path}")
     plt.show()
 
     # Plot training curves
@@ -140,13 +139,7 @@ def run_capacity_ablation():
     plt.tight_layout()
     output_path = os.path.join(results_dir, 'capacity_ablation_moons_training_curves.png')
     plt.savefig(output_path, dpi=150, bbox_inches='tight')
-    print(f"✓ Saved training curves to: {output_path}")
     plt.show()
-
-    # Analysis summary
-    print("\n" + "=" * 70)
-    print("Analysis: How does capacity affect generalization?")
-    print("=" * 70)
 
     return results, trained_models
 

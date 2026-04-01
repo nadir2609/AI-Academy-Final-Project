@@ -1,13 +1,3 @@
-"""
-1. Use training set to fit parameters
-2. Use validation set to choose best epoch (checkpoint)
-3. Fix ONE final configuration for each model (already tuned)
-4. Run 5 seeds for each configuration
-5. Evaluate test set ONCE per seed (after training completes)
-6. Report: mean ± 2.776 × (std / √5) for 95% CI with 4 degrees of freedom
-
-"""
-
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
@@ -18,53 +8,7 @@ from model import MLP
 from train import train
 from optimizers import Adam, SGD
 from utils import load_dataset, softmax
-
-
-# =============================================================================
-# SOFTMAX REGRESSION CLASS (simplified version for this script)
-# =============================================================================
-
-class SoftmaxRegression:
-    """
-    Multiclass softmax regression baseline.
-    
-    This is simpler than the neural network - just a linear model:
-        scores = X @ W + b
-        probabilities = softmax(scores)
-    """
-
-    def __init__(self, input_dim, num_classes, seed=0):
-        np.random.seed(seed)
-        # Xavier initialization
-        scale = np.sqrt(2.0 / (input_dim + num_classes))
-        self.W = np.random.randn(input_dim, num_classes) * scale
-        self.b = np.zeros(num_classes)
-        self.cache = {}
-
-    def forward(self, X):
-        """Forward pass: X -> scores -> probabilities"""
-        scores = X @ self.W + self.b
-        probs = softmax(scores)
-        self.cache = {'X': X, 'probs': probs}
-        return probs
-
-    def backward(self, y_true):
-        """Backward pass: compute gradients"""
-        n = y_true.shape[0]
-        X, probs = self.cache['X'], self.cache['probs']
-
-        # One-hot encode labels
-        y_onehot = np.zeros_like(probs)
-        y_onehot[np.arange(n), y_true] = 1
-
-        # Gradient of cross-entropy + softmax combined
-        dscores = (probs - y_onehot) / n
-
-        # Gradients for W and b
-        dW = X.T @ dscores
-        db = np.sum(dscores, axis=0)
-
-        return {'W': dW, 'b': db}
+from model import SoftmaxRegression
 
 
 # =============================================================================
@@ -89,7 +33,7 @@ def train_softmax(model, X_train, y_train, X_val, y_val,
     history = {'train_loss': [], 'val_loss': [], 'train_acc': [], 'val_acc': []}
 
     def compute_loss_acc(X, y):
-        probs = model.forward(X)
+        _, probs = model.forward(X)
         # Cross-entropy loss
         loss = -np.mean(np.log(probs[np.arange(len(y)), y] + eps))
         # Add L2 regularization
@@ -108,15 +52,17 @@ def train_softmax(model, X_train, y_train, X_val, y_val,
             end = start + batch_size
             X_batch, y_batch = X_shuf[start:end], y_shuf[start:end]
 
-            model.forward(X_batch)
-            grads = model.backward(y_batch)
+            _, probs = model.forward(X_batch)
+            
+            # One-hot encode labels
+            Y_onehot = np.zeros((len(y_batch), model.k))
+            Y_onehot[np.arange(len(y_batch)), y_batch] = 1
+            
+            dW, db = model.backward(X_batch, probs, Y_onehot)
 
-            # Add L2 regularization gradient
-            grads['W'] += lam * model.W
-
-            # SGD update
-            model.W -= lr * grads['W']
-            model.b -= lr * grads['b']
+            # SGD update (L2 regularization is already included in backward)
+            model.W -= lr * dW
+            model.b -= lr * db
 
         # Compute epoch metrics
         train_loss, train_acc = compute_loss_acc(X_train, y_train)
@@ -156,7 +102,10 @@ def evaluate_model(model, X, y, model_type='mlp'):
     eps = 1e-8
 
     # Get predictions
-    probs = model.forward(X)
+    if model_type == 'softmax':
+        _, probs = model.forward(X)
+    else:
+        probs = model.forward(X)
     predictions = np.argmax(probs, axis=1)
 
     # Compute metrics
@@ -183,7 +132,6 @@ def compute_confidence_interval(values, confidence=0.95):
         degrees of freedom = n - 1 = 4
         t_critical (two-tailed, 95%) = 2.776
     
-    This tells us: "We are 95% confident the true mean lies in this range"
     """
     n = len(values)
     mean = np.mean(values)
@@ -276,8 +224,9 @@ def run_repeated_seed_evaluation(seeds=[0, 1, 2, 3, 4]):
 
         # Create and train model
         model = SoftmaxRegression(
-            input_dim=config['input_dim'],
-            num_classes=config['num_classes'],
+            d=config['input_dim'],
+            k=config['num_classes'],
+            lam=config['lam'],
             seed=seed
         )
 
@@ -349,7 +298,7 @@ def run_repeated_seed_evaluation(seeds=[0, 1, 2, 3, 4]):
     # COMPUTE STATISTICS AND CONFIDENCE INTERVALS
     # =========================================================================
     print("\n" + "=" * 70)
-    print("FINAL RESULTS WITH 95% CONFIDENCE INTERVALS")
+    print("Results with 95% Confidence Intervals")
     print("=" * 70)
 
     stats = {}
@@ -391,11 +340,11 @@ def run_repeated_seed_evaluation(seeds=[0, 1, 2, 3, 4]):
     m_upper = stats['mlp']['accuracy']['ci_upper']
 
     if m_lower > s_upper:
-        print("  → MLP is SIGNIFICANTLY better (CIs don't overlap)")
+        print("MLP is much better ")
     elif s_lower > m_upper:
-        print("  → Softmax is SIGNIFICANTLY better (CIs don't overlap)")
+        print("Softmax is much better ")
     else:
-        print("  → Difference is NOT statistically significant (CIs overlap)")
+        print(" Difference is not statistically significant ")
 
     # =========================================================================
     # GENERATE SUMMARY TABLE FOR REPORT
@@ -486,7 +435,6 @@ def plot_results(results, stats, save_path=None):
 
     if save_path:
         plt.savefig(save_path, dpi=150, bbox_inches='tight')
-        print(f"\n✓ Figure saved to: {save_path}")
 
     plt.show()
 
@@ -502,12 +450,9 @@ if __name__ == '__main__':
     results, stats = run_repeated_seed_evaluation(seeds=[0, 1, 2, 3, 4])
 
     # Create visualization
-    figures_dir = Path(__file__).parent.parent / 'figures'
-    figures_dir.mkdir(parents=True, exist_ok=True)
+    results_dir = Path(__file__).parent.parent / 'results'
+    results_dir.mkdir(parents=True, exist_ok=True)
 
     plot_results(results, stats,
-                 save_path=figures_dir / 'repeated_seed_evaluation.png')
+                 save_path=results_dir / 'repeated_seed_evaluation.png')
 
-    print("\n" + "=" * 70)
-    print("EVALUATION COMPLETE!")
-    print("=" * 70)
