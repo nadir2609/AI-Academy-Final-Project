@@ -4,7 +4,6 @@
 *.fls
 *.log
 *.out
-*.pdf
 *.synctex.gz
 deliverables/committee_evaluation_sheet.tex
 nul

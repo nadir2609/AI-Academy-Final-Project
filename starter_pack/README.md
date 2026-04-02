@@ -31,9 +31,14 @@ Students are expected to implement the intellectually central parts of the proje
 
 Replace this section with your team members and high-level responsibilities.
 
-- Name 1: role
-- Name 2: role
-- Name 3: role
+- Gulnar Babazade:  Implemented softmax regression, sanity checks,
+and experiments on synthetic datasets
+- Nadir Askarov: Implemented MLP, backpropagation, optimizers,
+and capacity ablation studies.
+- Narmina Ibrahimova: Implemented PCA analysis (Track A),
+repeated-seed evaluation.
+- Evez Huseynov : Implemented training for MLP, backward for
+mlp ,optimizers study on digits dataset.
 
 ## Suggested Repository Layout
 
