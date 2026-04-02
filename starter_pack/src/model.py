@@ -130,3 +130,6 @@ class MLP:
 
         grads = {'W1': dW1, 'b1': db1, 'W2': dW2, 'b2': db2}
         return grads
+    def predict(self, X):
+        probs = self.forward(X)
+        return np.argmax(probs, axis=1)
